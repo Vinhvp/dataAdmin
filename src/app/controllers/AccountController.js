@@ -1,5 +1,6 @@
 
 const accounts = require('../../models/account');
+const mailServers = require('../../mailServer/mailServer');
 class AccountController{
     //[GET] /
     async Accounts(req, res){
@@ -14,22 +15,34 @@ class AccountController{
     //[Update]
     async updateAccounts(req,res){
         const record = req.body;
-        // const handleError(err){
-        //     console.log
-        // }
         const checkExist = await accounts.findOne({email: record.email})
-        console.log(checkExist);
         if(checkExist){
             res.json({status:'false'});
         }
         else{
             const account = await accounts.create(record);
-            console.log(account);
-            res.json({status:'true'});
+            mailServers(record.email);
+            res.json({status:'true', email:`${record.email}`});
         }
-        // console.log(account);
+    }
+    async updateVerify(req,res){
+        const record = req.body;
+        await accounts.findOneAndUpdate({email: record.email},{verify: record.verify},{
+            new: true
+        } );
+        res.json({status:'true'})
         
-        // console.log(record);
+    }
+    async login(req,res){
+        const record = req.body;
+        let account = accounts.findOne({email: record.email},(err,acc)=>{
+            if(err) return handleError(err);
+            if(record.password === acc.password){
+                res.json({password:'true'});
+            }else{
+                res.json({password:'false'});
+            }
+        });
     }
    
 

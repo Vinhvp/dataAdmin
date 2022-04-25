@@ -1,7 +1,6 @@
 const express = require('express');
-const Verify = require('./src/components/verify/verify');
 require('dotenv').config();
-const nodemailer = require('nodemailer');
+
 const app = express();
 const path = require('path');
 const bodyParser = require('body-parser');
@@ -28,29 +27,8 @@ const route = require('./src/routes/index');
 ///Routes init
 
 route(app);
+////////////////////NODEMAIL
 
-let transporter = nodemailer.createTransport({
-    service:'gmail',
-    auth:{
-        user: process.env.MAIL_USERNAME,
-        pass: process.env.MAIL_PASSWORD
-    }
-});
-
-let mailOptions = {
-    from: 'phuvinh.job.277@gmail.com',
-    to: 'vinhvp@dgroup.co',
-    subject: 'testing and testing',
-    html: `${Verify}`
-};
-
-transporter.sendMail(mailOptions,(err,data)=>{
-    if(err){
-        console.log("error occurs",err);
-    }else{
-        console.log('email send!');
-    }
-});
 // app.post('/productList/create', async (req, res) => {
 //     const productList = req.body
 // 	console.log(productList)

@@ -1,10 +1,11 @@
 const productListRouter = require('./productList');
 const productDetailsRouter =require('./productDetails');
 const accountRouter = require('./account');
+
 function route(app){
     app.use('/productList',productListRouter)
     app.use('/productDetails', productDetailsRouter)
-    app.use('/Account',accountRouter)
+    app.use('/account',accountRouter)
     
     
     // const productLists = require('../models/productLists');

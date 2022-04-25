@@ -5,5 +5,6 @@ const account = new Schema({
     name: String,
     email: {type: String, require: true},
     password: {type: String, require: true},
+    verify: {type: String}
 })
 module.exports = mongoose.model('accountModel',account);
