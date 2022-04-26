@@ -4,6 +4,8 @@ const router = express.Router();
 const accountController = require('../app/controllers/AccountController');
 // productListController.productList
 router.use('/verify/', accountController.updateVerify);
+router.use('/productDetails/get', accountController.getProducts);
+router.use('/productDetails', accountController.addProducts);
 router.use('/login/', accountController.login);
 router.use('/', accountController.updateAccounts);
 
