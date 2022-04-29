@@ -1,8 +1,16 @@
 
 const accounts = require('../../models/account');
 const mailServers = require('../../mailServer/mailServer');
+const mailUpdatePassword = require('../../mailServer/mailUpdatePassword');
 const bcrypt = require("bcrypt");
 const JWT = require("jsonwebtoken");
+const resetPasswords = require('../../mailServer/resetPass.service');
+const hashPass = async (pass) =>{
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(pass, salt);
+    return hashedPassword;
+}
+
 class AccountController{
     //[GET] /
     async Accounts(req, res){
@@ -32,11 +40,7 @@ class AccountController{
          // Hash password before saving to database
         const check = await accounts.findOne({email: record.email});
         const passwords = check.password;
-        const salt = await bcrypt.genSalt(10);
-        console.log("salt:", salt);
-        const hashedPassword = await bcrypt.hash(passwords, salt);
-        console.log("hashed password:", hashedPassword);
-        await accounts.findOneAndUpdate({email: record.email},{verify: record.verify, password: hashedPassword},{
+        await accounts.findOneAndUpdate({email: record.email},{verify: record.verify, password: await hashPass(passwords)},{
             new: true
         } );
         const emails = record.email;
@@ -68,7 +72,7 @@ class AccountController{
           );
         bcrypt.compare(record.password, check.password, function(err, result) {
             // result == true
-            if(result) res.json({password:'true', token: accessToken});
+            if(result) res.json({password:'true', token: accessToken, name: check.name});
             else res.json({password:'false'});
         });
     }
@@ -82,11 +86,42 @@ class AccountController{
     }
     async getProducts(req,res){
         const users = req.query;
-        console.log(users)
         accounts.findOne({email: users.user},(err,obj)=>{
             if(err) console.log(err);
             res.json(obj);
         });
+    }
+    async updatePassword(req,res){
+        const record = req.body;
+        // Hash password before saving to database
+        const check = await accounts.findOne({email: record.user});
+        console.log('hash newPass',await hashPass(record.newPasswords));
+        bcrypt.compare(record.oldPasswords, check.password, async function(err, result) {
+            // result == true
+            if(result) {
+                await accounts.findOneAndUpdate({email: record.user}, {password: await hashPass(record.newPasswords)},{
+                    new: true
+                }); 
+                res.json({password:'true'});
+            }else{
+                res.json({password:'false'})
+            }
+            
+        });
+    }
+    async updatePasswordAgain(req,res){
+        const record = req.body;
+        const check = await accounts.findOne({email: record.email});
+        const randomPassword = resetPasswords()
+        if(check){
+            mailUpdatePassword(record.email, randomPassword);
+            await accounts.findOneAndUpdate({email: record.email}, {password: await hashPass(randomPassword)},{
+                new: true
+            }); 
+            res.json({password:'true'});
+        }
+       
+        // const check = await accounts.findOne({email: record.user});
     }
    
    
