@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer');
-const mailServer = (mail) => {
-    const url = 'http://localhost:3000/account/verify/'+ mail;
+const mailServer = (mail,verifyToken='') => {
+    const url = 'http://localhost:3000/account/verify/';
     console.log(url);
     let transporter = nodemailer.createTransport({
         service:'gmail',
@@ -31,9 +31,9 @@ const mailServer = (mail) => {
        text-transform: uppercase;
        letter-spacing: 1px;
                            
-     background: #b22234"><a href="${url}" style="color: white; text-decoration: none">Click to verify your email</a></button>
+     background: #b22234"><a href="${url+verifyToken}" style="color: white; text-decoration: none">Click to verify your email</a></button>
        <h5>If the above link does not work, copy and paste this URL into your browser: </h5>
-       <h5><a href="${url}">Click Here</a></h5>
+       <h5><a href="${url+verifyToken}">Click Here</a></h5>
              </div>
     
     

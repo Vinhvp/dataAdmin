@@ -5,6 +5,7 @@ const bcrypt = require("bcrypt");
 const JWT = require("jsonwebtoken");
 const resetPasswords = require('../../mailServer/resetPass.service');
 const productLists = require('../../models/productLists');
+const orderLists = require('../../models/orderList');
 const hashPass = async (pass) =>{
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(pass, salt);
@@ -40,7 +41,6 @@ class AdminController{
     
    async forgot(req,res){
     const randomPassword = resetPasswords();
-    console.log(randomPassword);
     mailUpdatePassword('vinhvp@dgroup.co', randomPassword, 'http://localhost:8888/');
     await admin.findOneAndUpdate({email: 'vinhvp@dgroup.co'}, {password: await hashPass(randomPassword)},{
         new: true
@@ -68,18 +68,54 @@ class AdminController{
             img: record.img,
             title: record.title,
             price: parseInt(record.price),
-            category: record.category
+            category: record.category,
+            sizeL: record.quantity,
+            sizeM: record.quantity,
+            sizeS: record.quantity
         })
         product.save((err,result)=>{
             if(err){
                 console.log(err);
             }
             else{
-                console.log(result);
                 res.json({status:true})
             }
         })
 
+   }
+   async getOrders(req,res){
+        const page = req.query.pages;
+        if(parseInt(page) >=1 ){
+            const pages = parseInt(page);
+            const page_size = 10;
+            const skip = (pages - 1)*page_size;
+            const orderLength = (await orderLists.find({})).length;
+            
+            const orderList = await orderLists.find({})
+            .skip(skip)
+            .limit(page_size);
+            res.json({status:202, orderList: orderList, length: orderLength});
+     }
+   }
+   async updateOrders(req,res){
+      const record = JSON.parse(req.body.data);
+      const date = req.body.date;
+      //clone by destructuring
+      const order = record.map((obj)=>{
+          const {id,title,quantity,price,size,...rest} = obj;
+          const newObj =  {id,title,quantity:Number(quantity),price: Number(price),size,date: date};
+          return newObj;
+      })
+      order.forEach((item) =>{
+          try{
+              const checkout = orderLists.create(item);
+              console.log(checkout);
+          }
+          catch(err){
+              console.log(err);
+          }
+      })
+      res.json({status:202});
    }
 }
 

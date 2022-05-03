@@ -12,6 +12,14 @@ const productLists = new Schema({
     title: String,
     price: Number,
     category: String,
-    id: Number
+    id: Number,
+    description: String,
+    size: String,
+    color: String,
+    quantity: Number,
+    sizeS: Number,
+    sizeM: Number,
+    sizeL: Number,
+
 })
 module.exports = mongoose.model('productModel',productLists);

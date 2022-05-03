@@ -5,6 +5,7 @@ const mailUpdatePassword = require('../../mailServer/mailUpdatePassword');
 const bcrypt = require("bcrypt");
 const JWT = require("jsonwebtoken");
 const resetPasswords = require('../../mailServer/resetPass.service');
+const verifyTokens = require('../../mailServer/verifyToken.service');
 const hashPass = async (pass) =>{
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(pass, salt);
@@ -30,9 +31,11 @@ class AccountController{
             res.json({status:'false'});
         }
         else{
+            const verifyToken = verifyTokens();
+     
             const account = await accounts.create(record);
-            mailServers(record.email);
-            res.json({status:'true', email:`${record.email}`});
+            mailServers(record.email,verifyToken);
+            res.json({status:'true', email:`${record.email}`, verifyToken:`${verifyToken}`});
         }
     }
     async updateVerify(req,res){
@@ -44,7 +47,7 @@ class AccountController{
             new: true
         } );
         const emails = record.email;
-        console.log(emails);
+    
         const accessToken = await JWT.sign(
             { emails },
             process.env.ACCESS_TOKEN_SECRET,
@@ -52,7 +55,7 @@ class AccountController{
               expiresIn: "1m",
             }
           );
-        console.log(accessToken);
+        
           res.json({
             token: accessToken,
             status: 'true'
@@ -78,11 +81,34 @@ class AccountController{
     }
     async addProducts(req,res){
         const record = req.body;
-        const product = {"id": record.id, "quantity": record.quantity, "size":record.size};
-        await accounts.findOneAndUpdate({email: record.user}, {$push: {products: product}},{
+        console.log(record);
+        // const product = {"id": record.id, "quantity": record.quantity, "size":record.size, "color":record.color};
+        await accounts.findOneAndUpdate({email: record.user}, {$push: {products: record.products}},{
             new: true
         });
-        res.json({status: "okay"});
+        // console.log(p.products);
+        // Object.assign(p.products,product);
+        // p.save()
+        // const memo = {};
+        // function getKey(obj){
+        // return `${obj['id']}_${obj['size']}}`;
+        // }
+        // p.products.forEach((obj)=>{
+        // const key = getKey(obj);
+        // memo[key] = obj;
+        // })
+        // const result = Object.values(memo);
+        // // const a = accounts.findOne({email: record.user}, function(err, accounts){
+        // //     accounts.products = undefined;
+        // //     accounts.save();
+        // //   });
+        // console.log(result);
+        // const b = await accounts.findOneAndUpdate({email: record.user}, {$push: {productss: result}},{
+        //     new: true
+        // });
+        
+        
+        res.json({status: "okay", products: record.products});
     }
     async getProducts(req,res){
         const users = req.query;
@@ -95,7 +121,7 @@ class AccountController{
         const record = req.body;
         // Hash password before saving to database
         const check = await accounts.findOne({email: record.user});
-        console.log('hash newPass',await hashPass(record.newPasswords));
+        
         bcrypt.compare(record.oldPasswords, check.password, async function(err, result) {
             // result == true
             if(result) {
