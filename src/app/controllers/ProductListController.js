@@ -15,6 +15,10 @@ class ProductListController{
             res.status(200).send({product: productList, productLength: productLengths.length});
         }
     }
+    async deleteList(req,res){
+        const id = req.query.id;
+        await productLists.deleteOne({_id: id})
+    }
 
 }
 

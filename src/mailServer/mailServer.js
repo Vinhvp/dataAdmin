@@ -1,7 +1,7 @@
 const nodemailer = require('nodemailer');
 const mailServer = (mail,verifyToken='') => {
     const url = 'http://localhost:3000/account/verify/';
-    console.log(url);
+    console.log(url+verifyToken);
     let transporter = nodemailer.createTransport({
         service:'gmail',
         auth:{

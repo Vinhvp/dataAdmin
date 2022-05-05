@@ -31,12 +31,26 @@ class AccountController{
             res.json({status:'false'});
         }
         else{
-            const verifyToken = verifyTokens();
-     
+            const emails = record.email;
+            const verifyToken = await JWT.sign(
+                { emails },
+                process.env.ACCESS_TOKEN_SECRET,
+                {
+                  expiresIn: "1m",
+                }
+              );    
+            // const verifyTokens = verifyToken.split('.')[0].toLowerCase();
+            record.verifyToken = verifyToken;
             const account = await accounts.create(record);
             mailServers(record.email,verifyToken);
             res.json({status:'true', email:`${record.email}`, verifyToken:`${verifyToken}`});
         }
+    }
+    async getVerify(req,res){
+        const checkExist = await accounts.findOne({email: req.query.email})
+        console.log(checkExist);
+        const verify = checkExist.verifyToken;
+        res.json({status:'true', verify:`${verify}`});
     }
     async updateVerify(req,res){
         const record = req.body;

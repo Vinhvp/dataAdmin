@@ -20,6 +20,8 @@ const productLists = new Schema({
     sizeS: Number,
     sizeM: Number,
     sizeL: Number,
+    sold: Number
+
 
 })
 module.exports = mongoose.model('productModel',productLists);

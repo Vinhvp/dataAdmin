@@ -8,6 +8,7 @@ const orderLists = new Schema({
     size: String,
     date: String,
     quantity: Number,
+    status: String
 
 })
 module.exports = mongoose.model('orderListsModel',orderLists);

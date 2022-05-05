@@ -3,6 +3,7 @@ const router = express.Router();
 
 const productListController = require('../app/controllers/ProductListController');
 // productListController.productList
+router.use('/delete', productListController.deleteList);
 router.use('/get', productListController.productList);
 router.use('/', productListController.productList);
 

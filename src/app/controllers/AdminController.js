@@ -69,9 +69,11 @@ class AdminController{
             title: record.title,
             price: parseInt(record.price),
             category: record.category,
+            description: record.description,
             sizeL: record.quantity,
             sizeM: record.quantity,
-            sizeS: record.quantity
+            sizeS: record.quantity,
+            sold: record.sold
         })
         product.save((err,result)=>{
             if(err){
@@ -103,7 +105,7 @@ class AdminController{
       //clone by destructuring
       const order = record.map((obj)=>{
           const {id,title,quantity,price,size,...rest} = obj;
-          const newObj =  {id,title,quantity:Number(quantity),price: Number(price),size,date: date};
+          const newObj =  {id,title,quantity:Number(quantity),price: Number(price),size,date: date,status: 'pending'};
           return newObj;
       })
       order.forEach((item) =>{
@@ -116,6 +118,29 @@ class AdminController{
           }
       })
       res.json({status:202});
+   }
+   async updateStatusOrders(req,res){
+       console.log(req.body);
+       const status = req.body.data;
+       const id = req.body.id;
+        if(status == 'cancel'){
+            await orderLists.findOneAndUpdate({_id: id}, {status: status},{
+                new: true
+                }); 
+            res.json({status:404});
+
+        }else{
+            const quantity = req.body.quantity;
+            const tmp = await productLists.findOne({_id: req.body.id_sp});
+            console.log(tmp);
+            const solds = tmp.sold + quantity;
+            await productLists.findOneAndUpdate({_id: req.body.id_sp},{sold: solds});
+            await orderLists.findOneAndUpdate({_id: id}, {status: status},{
+            new: true
+            }); 
+            res.json({status:202});
+        }
+      
    }
 }
 
